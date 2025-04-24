@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.15)
 
 #! CHANGE YOUR PROJECT NAME
 #  It is used as your project's main executable name. 
-set(PROJECT_NAME template)
+set(PROJECT_NAME my_vector)
 project(${PROJECT_NAME} C CXX) # project(${PROJECT_NAME} C CXX ASM)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -27,6 +27,16 @@ set(ENABLE_PVS_STUDIO OFF)
 #  Disable it for the production builds and before submitting for grading.
 #  Only one of the Memory (MSAN), Address (ASAN), or Thread (TSan)
 #  sanitizers is applicable at the time -- the first defined.
+include(FetchContent)
+
+FetchContent_Declare(
+		googletest
+		URL https://github.com/google/googletest/archive/refs/tags/release-1.12.1.zip
+)
+
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(googletest)
 
 #! UndefinedBehaviorSanitizer (UBSan).
 #  Info: https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
@@ -55,18 +65,19 @@ include(cmake/CompilerWarnings.cmake)
 ##########################################################
 
 #! Project main executable source compilation
-add_executable(${PROJECT_NAME} main.cpp
-				options_parser/options_parser.cpp options_parser/options_parser.h)
-
+add_executable(${PROJECT_NAME} main.cpp)
+add_executable(array_test tests/array_tests.cpp)
+add_executable(vector_tests tests/vector_tests.cpp)
 #! Put path to your project headers
 target_include_directories(${PROJECT_NAME} PRIVATE options_parser)
 
-#! Add external packages
-# options_parser requires boost::program_options library
-find_package(Boost 1.71.0 COMPONENTS program_options system REQUIRED)
-target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} Boost::program_options Boost::system)
+target_include_directories(my_vector PRIVATE include)
+target_include_directories(array_test PRIVATE include)
+target_include_directories(vector_tests PRIVATE include)
 
+
+target_link_libraries(array_test PRIVATE GTest::gtest GTest::gmock pthread)
+target_link_libraries(vector_tests PRIVATE GTest::gtest GTest::gmock pthread)
 ##########################################################
 # Fixed CMakeLists.txt part
 ##########################################################
